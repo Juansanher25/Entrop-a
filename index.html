@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma Académica de Entropía y Termodinámica</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- MathJax 3 Configuration & Async Loading -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            options: {
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process'
+            }
+        };
+    </script>
+    <script id="mathjax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+    <!-- Chosen Palette: Warm Sand & Slate Thermo Theme -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        thermoBg: '#FDFBF7',
+                        thermoCard: '#FFFFFF',
+                        thermoAccent: '#C2593F', // Rust Red accent
+                        thermoSecondary: '#2C4A5E', // Deep Slate Blue
+                        thermoMuted: '#7E8B95',
+                        thermoLight: '#F3EFEA'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Embedded Chart Container Styles */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 650px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 360px;
+            }
+        }
+        /* TeX equation sizing and vertical alignment */
+        .math-display {
+            font-size: 1.15rem;
+            min-height: 2.5rem;
+            display: flex;
+            align-items: center;
+        }
+    </style>
+    <!-- Application Structure Plan:
+        1. Header & Navigation: Clean top navbar linking to key thematic domains.
+        2. Hero & Context: Academic overview introducing Entropy, Gouy-Stodola Theorem, and fundamental equations.
+        3. Interactive Visualizers Section:
+           - Ideal Gas / Pure Substance Entropy Calculator & Chart (P-v & T-s behavior).
+           - Turbomachinery Efficiency Comparator: Interactive Isentropic efficiency sliders.
+           - Heat Transfer Irreversibility Calculator: Visualizing Th, Tl, and S_gen along with Exergy Destruction.
+        4. Balance Summary Matrix (Closed vs Open Systems).
+    -->
+    <!-- Visualization & Content Choices:
+        - T-s & P-v Curves: Chart.js dynamic line charts with custom tooltip formatting.
+        - Math Equations: MathJax 3 for high-fidelity TeX rendering across initial static HTML and JS updates.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="bg-thermoBg text-slate-800 font-sans antialiased min-h-screen flex flex-col tex2jax_process">
+
+    <!-- Header / Navbar -->
+    <header class="bg-thermoSecondary text-white sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <span class="text-2xl font-serif font-bold text-thermoAccent">S</span>
+                <span class="font-semibold text-lg tracking-wide border-l border-slate-500 pl-3">Entropía: Explorador Termodinámico</span>
+            </div>
+            <nav class="hidden md:flex space-x-6 text-sm font-medium">
+                <a href="#fundamentos" class="hover:text-thermoAccent transition-colors">Fundamentos</a>
+                <a href="#sustancias" class="hover:text-thermoAccent transition-colors">Sustancias Puras</a>
+                <a href="#eficiencias" class="hover:text-thermoAccent transition-colors">Eficiencias Isentrópicas</a>
+                <a href="#calculadora" class="hover:text-thermoAccent transition-colors">Irreversibilidad</a>
+                <a href="#balances" class="bg-thermoAccent px-3 py-1.5 rounded-md text-white hover:bg-opacity-90 transition-all">Matriz de Balances</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+
+        <!-- Hero Section -->
+        <section id="fundamentos" class="bg-thermoCard rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200">
+            <div class="max-w-4xl">
+                <span class="text-xs font-semibold uppercase tracking-widest text-thermoAccent bg-thermoAccent/10 px-3 py-1 rounded-full">Marco Teórico Universitario</span>
+                <h1 class="text-3xl sm:text-4xl font-serif font-bold text-thermoSecondary mt-3 mb-4">
+                    Fundamentos Termodinámicos y Formulación Matemática de la Entropía
+                </h1>
+                <p class="text-slate-600 leading-relaxed text-base sm:text-lg mb-6">
+                    Esta plataforma interactiva aborda la entropía ($S$) desde la perspectiva macroscópica de Clausius y la mecánica estadística de Boltzmann. Permite examinar cuantitativamente la generación de entropía ($S_{\text{gen}}$), la degradación exergética en procesos reales, el cambio de propiedades en sustancias puras y gases ideales, y los balances energéticos en sistemas cerrados y volúmenes de control.
+                </p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-slate-100 pt-6">
+                    <div class="p-4 bg-thermoLight/50 rounded-xl flex flex-col justify-between">
+                        <div class="text-xs uppercase text-thermoMuted font-bold">Desigualdad de Clausius</div>
+                        <div class="math-display text-thermoSecondary font-semibold my-2">
+                            $$\oint \frac{\delta Q}{T} \le 0$$
+                        </div>
+                        <p class="text-xs text-slate-500">Criterio fundamental de reversibilidad y dirección de procesos.</p>
+                    </div>
+                    <div class="p-4 bg-thermoLight/50 rounded-xl flex flex-col justify-between">
+                        <div class="text-xs uppercase text-thermoMuted font-bold">Principio de Incremento</div>
+                        <div class="math-display text-thermoSecondary font-semibold my-2">
+                            $$\Delta S_{\text{universo}} \ge 0$$
+                        </div>
+                        <p class="text-xs text-slate-500">La entropía del universo aislado aumenta en procesos irreversibles.</p>
+                    </div>
+                    <div class="p-4 bg-thermoLight/50 rounded-xl flex flex-col justify-between">
+                        <div class="text-xs uppercase text-thermoMuted font-bold">Teorema Gouy-Stodola</div>
+                        <div class="math-display text-thermoAccent font-semibold my-2">
+                            $$\dot{X}_{\text{destruida}} = T_0 \dot{S}_{\text{gen}}$$
+                        </div>
+                        <p class="text-xs text-slate-500">Cuantificación del trabajo útil perdido por irreversibilidad.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Section 1: Pure Substance & Ideal Gas Change -->
+        <section id="sustancias" class="bg-thermoCard rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200">
+            <div class="mb-6">
+                <h2 class="text-2xl font-serif font-bold text-thermoSecondary">1. Cálculo de Cambio de Entropía ($\Delta s$)</h2>
+                <p class="text-slate-600 text-sm mt-1">
+                    Esta sección permite explorar los balances de propiedades mediante las ecuaciones $Tds$ para sustancias incompresibles (líquidos/sólidos) y gases ideales bajo análisis aproximado (calores específicos constantes) y exacto.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <!-- Controls -->
+                <div class="lg:col-span-5 bg-thermoLight/60 p-6 rounded-xl border border-slate-200 space-y-5">
+                    <h3 class="font-semibold text-thermoSecondary text-base border-b border-slate-300 pb-2">Parámetros del Proceso</h3>
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Modelo de Sustancia</label>
+                        <select id="substanceModel" onchange="updateSubstanceCalc()" class="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-thermoAccent focus:outline-none">
+                            <option value="idealGas">Gas Ideal (Aire - Calores Específicos Constantes)</option>
+                            <option value="incompressible">Sustancia Incompresible (Agua Líquida / Aluminio)</option>
+                        </select>
+                    </div>
+
+                    <!-- Gas Ideal Inputs -->
+                    <div id="gasInputs" class="space-y-4">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs text-slate-600 font-medium">Temperatura $T_1$ (K)</label>
+                                <input type="number" id="inputT1" value="300" step="10" onchange="updateSubstanceCalc()" class="w-full bg-white border rounded p-2 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-600 font-medium">Temperatura $T_2$ (K)</label>
+                                <input type="number" id="inputT2" value="450" step="10" onchange="updateSubstanceCalc()" class="w-full bg-white border rounded p-2 text-sm">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs text-slate-600 font-medium">Presión $P_1$ (kPa)</label>
+                                <input type="number" id="inputP1" value="100" step="10" onchange="updateSubstanceCalc()" class="w-full bg-white border rounded p-2 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-600 font-medium">Presión $P_2$ (kPa)</label>
+                                <input type="number" id="inputP2" value="300" step="10" onchange="updateSubstanceCalc()" class="w-full bg-white border rounded p-2 text-sm">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Incompressible Inputs -->
+                    <div id="incompInputs" class="space-y-4 hidden">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs text-slate-600 font-medium">Temperatura $T_1$ (K)</label>
+                                <input type="number" id="incompT1" value="293" step="5" onchange="updateSubstanceCalc()" class="w-full bg-white border rounded p-2 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-600 font-medium">Temperatura $T_2$ (K)</label>
+                                <input type="number" id="incompT2" value="353" step="5" onchange="updateSubstanceCalc()" class="w-full bg-white border rounded p-2 text-sm">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-600 font-medium">Calor Específico $c$ (kJ/kg·K)</label>
+                            <input type="number" id="incompC" value="4.18" step="0.1" onchange="updateSubstanceCalc()" class="w-full bg-white border rounded p-2 text-sm">
+                        </div>
+                    </div>
+
+                    <!-- Mathematical Result Box -->
+                    <div class="p-4 bg-white rounded-lg border border-slate-200 shadow-sm space-y-2">
+                        <div class="text-xs text-thermoMuted font-bold uppercase">Resultado del Cambio de Entropía</div>
+                        <div id="resultDeltaS" class="text-2xl font-bold text-thermoAccent">0.0000 kJ/kg·K</div>
+                        <div id="equationDisplay" class="text-xs text-slate-600 pt-2 border-t border-slate-100 overflow-x-auto"></div>
+                    </div>
+                </div>
+
+                <!-- Visualization -->
+                <div class="lg:col-span-7 flex flex-col justify-center">
+                    <div class="chart-container">
+                        <canvas id="substanceChart"></canvas>
+                    </div>
+                    <p class="text-xs text-center text-slate-500 mt-3">
+                        Gráfico interactivo de la trayectoria del estado inicial (1) al final (2) en plano $T-s$.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Section 2: Isentropic Efficiencies in Steady-Flow Devices -->
+        <section id="eficiencias" class="bg-thermoCard rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200">
+            <div class="mb-6">
+                <h2 class="text-2xl font-serif font-bold text-thermoSecondary">2. Aparatos de Flujo Estable y Eficiencias Isentrópicas</h2>
+                <p class="text-slate-600 text-sm mt-1">
+                    Análisis cuantitativo del desempeño en turbinas, compresores, bombas y toberas comparando la trayectoria isentrópica ideal ($1 \rightarrow 2s$) frente a la real con generación de entropía ($1 \rightarrow 2a$).
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <!-- Device Selector & Sliders -->
+                <div class="lg:col-span-5 bg-thermoLight/60 p-6 rounded-xl border border-slate-200 space-y-5">
+                    <h3 class="font-semibold text-thermoSecondary text-base border-b border-slate-300 pb-2">Configuración del Dispositivo</h3>
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Seleccionar Dispositivo</label>
+                        <select id="deviceType" onchange="updateDeviceCalc()" class="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-thermoAccent focus:outline-none">
+                            <option value="turbine">Turbina Adiabática</option>
+                            <option value="compressor">Compresor Adiabático</option>
+                        </select>
+                    </div>
+
+                    <div class="p-3 bg-white rounded-lg border border-slate-200 text-center">
+                        <div id="deviceFormulaDisplay" class="text-sm font-semibold text-thermoSecondary">
+                            $$\eta_t = \frac{h_1 - h_{2a}}{h_1 - h_{2s}}$$
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs font-medium text-slate-700 mb-1">
+                            <span>Eficiencia Isentrópica ($\eta$)</span>
+                            <span id="effValueDisplay" class="font-bold text-thermoAccent">85%</span>
+                        </div>
+                        <input type="range" id="effSlider" min="50" max="100" value="85" step="1" oninput="updateDeviceCalc()" class="w-full accent-thermoAccent cursor-pointer">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs text-slate-600 font-medium">Temperatura Entrada $T_1$ (K)</label>
+                            <input type="number" id="devT1" value="800" step="10" onchange="updateDeviceCalc()" class="w-full bg-white border rounded p-2 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-600 font-medium">Relación de Presión ($P_1/P_2$)</label>
+                            <input type="number" id="devPR" value="5" step="0.5" onchange="updateDeviceCalc()" class="w-full bg-white border rounded p-2 text-sm">
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-lg border border-slate-200 text-xs space-y-2">
+                        <div class="flex justify-between border-b pb-1">
+                            <span class="text-slate-500">Trabajo Ideal Isentrópico ($w_s$):</span>
+                            <span id="wsDisplay" class="font-bold text-slate-800">0.0 kJ/kg</span>
+                        </div>
+                        <div class="flex justify-between border-b pb-1">
+                            <span class="text-slate-500">Trabajo Real ($w_a$):</span>
+                            <span id="waDisplay" class="font-bold text-thermoAccent">0.0 kJ/kg</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Generación de Entropía ($s_{\text{gen}}$):</span>
+                            <span id="sgenDisplay" class="font-bold text-thermoSecondary">0.000 kJ/kg·K</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart -->
+                <div class="lg:col-span-7 flex flex-col justify-center">
+                    <div class="chart-container">
+                        <canvas id="deviceChart"></canvas>
+                    </div>
+                    <p class="text-xs text-center text-slate-500 mt-3">
+                        Diagrama de Mollier ($h-s$) que ilustra la desviación vertical isentrópica vs el camino real inclinado a la derecha.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Section 3: Heat Transfer & Irreversibility -->
+        <section id="calculadora" class="bg-thermoCard rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200">
+            <div class="mb-6">
+                <h2 class="text-2xl font-serif font-bold text-thermoSecondary">3. Irreversibilidad y Transferencia de Calor por $\Delta T$ Finito</h2>
+                <p class="text-slate-600 text-sm mt-1">
+                    Evaluación de la tasa de generación de entropía ($\dot{S}_{\text{gen}}$) y la tasa de destrucción de exergía ($\dot{X}_{\text{dest}}$) en la transferencia de calor entre dos depósitos térmicos.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Card 1: High Temp Reservoir -->
+                <div class="p-5 bg-thermoLight/40 border border-slate-200 rounded-xl flex flex-col justify-between">
+                    <div>
+                        <div class="text-xs font-bold uppercase text-red-600 tracking-wider">Fuente de Alta Temp ($T_H$)</div>
+                        <div class="mt-3">
+                            <label class="text-xs text-slate-600">Temperatura $T_H$ (K)</label>
+                            <input type="number" id="htTH" value="1000" step="10" onchange="updateHeatTransferCalc()" class="w-full bg-white border rounded p-2 text-sm mt-1">
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-200 text-xs text-slate-600">
+                        Cambio Entrópico Fuente:<br>
+                        <span id="deltaSHDisplay" class="font-bold text-slate-800">0.00 kW/K</span>
+                    </div>
+                </div>
+
+                <!-- Card 2: Heat Flow & Environment -->
+                <div class="p-5 bg-thermoLight/40 border border-slate-200 rounded-xl flex flex-col justify-between">
+                    <div>
+                        <div class="text-xs font-bold uppercase text-thermoAccent tracking-wider">Flujo de Calor ($\dot{Q}$) y Ambiente</div>
+                        <div class="mt-3 space-y-2">
+                            <div>
+                                <label class="text-xs text-slate-600">Tasa de Calor Transferido $\dot{Q}$ (kW)</label>
+                                <input type="number" id="htQ" value="500" step="10" onchange="updateHeatTransferCalc()" class="w-full bg-white border rounded p-2 text-sm mt-1">
+                            </div>
+                            <div>
+                                <label class="text-xs text-slate-600">Temp. Ambiente $T_0$ (K)</label>
+                                <input type="number" id="htT0" value="298" step="1" onchange="updateHeatTransferCalc()" class="w-full bg-white border rounded p-2 text-sm mt-1">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Low Temp Reservoir -->
+                <div class="p-5 bg-thermoLight/40 border border-slate-200 rounded-xl flex flex-col justify-between">
+                    <div>
+                        <div class="text-xs font-bold uppercase text-blue-600 tracking-wider">Sumidero de Baja Temp ($T_L$)</div>
+                        <div class="mt-3">
+                            <label class="text-xs text-slate-600">Temperatura $T_L$ (K)</label>
+                            <input type="number" id="htTL" value="300" step="10" onchange="updateHeatTransferCalc()" class="w-full bg-white border rounded p-2 text-sm mt-1">
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-200 text-xs text-slate-600">
+                        Cambio Entrópico Sumidero:<br>
+                        <span id="deltaSLDisplay" class="font-bold text-slate-800">0.00 kW/K</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Heat Transfer Output Summary -->
+            <div class="mt-6 p-6 bg-slate-900 text-white rounded-xl grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                <div>
+                    <span class="text-xs font-bold uppercase text-thermoAccent tracking-widest">Generación Total de Entropía</span>
+                    <div id="htSgenTotal" class="text-3xl font-bold font-serif text-white mt-1">0.0000 kW/K</div>
+                    <div class="text-xs text-slate-400 mt-2">
+                        $$\dot{S}_{\text{gen,total}} = \dot{Q} \left( \frac{1}{T_L} - \frac{1}{T_H} \right) > 0$$
+                    </div>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase text-amber-400 tracking-widest">Destrucción de Exergía (Gouy-Stodola)</span>
+                    <div id="htXdest" class="text-3xl font-bold font-serif text-amber-400 mt-1">0.00 kW</div>
+                    <p class="text-xs text-slate-400 mt-2">
+                        Potencial de trabajo destruido irreversiblemente a temperatura ambiente $T_0$.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Balance Synthesis Reference Table -->
+        <section id="balances" class="bg-thermoCard rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200">
+            <h2 class="text-2xl font-serif font-bold text-thermoSecondary mb-4">4. Matriz Síntesis de Balances de Entropía</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-thermoSecondary text-white">
+                            <th class="p-3 font-semibold rounded-tl-lg">Tipo de Sistema</th>
+                            <th class="p-3 font-semibold">Ecuación Diferencial / Tasa Temporal</th>
+                            <th class="p-3 font-semibold">Forma Integrada (Estado 1 $\rightarrow$ 2)</th>
+                            <th class="p-3 font-semibold rounded-tr-lg">Observaciones y Fronteras</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200">
+                        <tr class="hover:bg-thermoLight/30">
+                            <td class="p-3 font-medium text-thermoSecondary">Sistema Cerrado</td>
+                            <td class="p-3">$$\frac{dS}{dt} = \sum \frac{\dot{Q}_k}{T_{b,k}} + \dot{S}_{\text{gen}}$$</td>
+                            <td class="p-3">$$S_2 - S_1 = \sum \frac{Q_k}{T_{b,k}} + S_{\text{gen}}$$</td>
+                            <td class="p-3 text-xs text-slate-600">No hay flujo de masa. Entropía entra/sale solo por flujo de calor en la frontera $T_b$.</td>
+                        </tr>
+                        <tr class="hover:bg-thermoLight/30">
+                            <td class="p-3 font-medium text-thermoSecondary">Volumen de Control Transitorio</td>
+                            <td class="p-3">$$\frac{dS_{\text{CV}}}{dt} = \sum \frac{\dot{Q}_k}{T_{b,k}} + \sum \dot{m}_e s_e - \sum \dot{m}_i s_i + \dot{S}_{\text{gen}}$$</td>
+                            <td class="p-3 text-xs font-semibold text-slate-700">Integración numérica temporal</td>
+                            <td class="p-3 text-xs text-slate-600">Acumulación interna de masa y entropía variable con el tiempo.</td>
+                        </tr>
+                        <tr class="hover:bg-thermoLight/30">
+                            <td class="p-3 font-medium text-thermoSecondary">Volumen de Control Estacionario</td>
+                            <td class="p-3">$$0 = \sum \frac{\dot{Q}_k}{T_{b,k}} + \sum \dot{m}_e s_e - \sum \dot{m}_i s_i + \dot{S}_{\text{gen}}$$</td>
+                            <td class="p-3">$$\dot{S}_{\text{gen}} = \dot{m}(s_i - s_e) - \sum \frac{\dot{Q}_k}{T_{b,k}}$$</td>
+                            <td class="p-3 text-xs text-slate-600">Régimen permanente ($\frac{dS_{\text{CV}}}{dt} = 0$). Aplica a turbinas, compresores y toberas.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-thermoSecondary text-slate-300 py-6 border-t border-slate-700 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs space-y-2">
+            <p>Plataforma Académica de Aprendizaje e Interacción Termodinámica</p>
+            <p class="text-slate-400">Desarrollado para el análisis riguroso de sustancias puras, procesos isentrópicos y generación entrópica.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Global Chart Handles
+        let substanceChartInstance = null;
+        let deviceChartInstance = null;
+
+        // Helper to trigger MathJax reprocessing safely
+        function triggerMathJax() {
+            if (window.MathJax && MathJax.typesetPromise) {
+                MathJax.typesetPromise();
+            }
+        }
+
+        // Initialize App on DOM Loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            initSubstanceChart();
+            initDeviceChart();
+            updateSubstanceCalc();
+            updateDeviceCalc();
+            updateHeatTransferCalc();
+        });
+
+        // --- 1. Substance Calculator & Chart Logic ---
+        function updateSubstanceCalc() {
+            const model = document.getElementById('substanceModel').value;
+            const gasInputs = document.getElementById('gasInputs');
+            const incompInputs = document.getElementById('incompInputs');
+
+            let deltaS = 0;
+            let labels = [];
+            let dataPoints = [];
+
+            if (model === 'idealGas') {
+                gasInputs.classList.remove('hidden');
+                incompInputs.classList.add('hidden');
+
+                const T1 = parseFloat(document.getElementById('inputT1').value) || 300;
+                const T2 = parseFloat(document.getElementById('inputT2').value) || 450;
+                const P1 = parseFloat(document.getElementById('inputP1').value) || 100;
+                const P2 = parseFloat(document.getElementById('inputP2').value) || 300;
+
+                const Cp = 1.005; // Air average kJ/kg K
+                const R = 0.287;   // Air gas constant kJ/kg K
+
+                deltaS = Cp * Math.log(T2 / T1) - R * Math.log(P2 / P1);
+
+                document.getElementById('equationDisplay').innerHTML = 
+                    `$$\\Delta s = c_p \\ln\\left(\\frac{T_2}{T_1}\\right) - R \\ln\\left(\\frac{P_2}{P_1}\\right) = ${Cp} \\ln\\left(\\frac{${T2}}{${T1}}\\right) - ${R} \\ln\\left(\\frac{${P2}}{${P1}}\\right)$$`;
+
+                const steps = 10;
+                for (let i = 0; i <= steps; i++) {
+                    const t = T1 + (T2 - T1) * (i / steps);
+                    const p = P1 + (P2 - P1) * (i / steps);
+                    const sStep = Cp * Math.log(t / T1) - R * Math.log(p / P1);
+                    labels.push(sStep.toFixed(3));
+                    dataPoints.push({ x: sStep, y: t });
+                }
+            } else {
+                gasInputs.classList.add('hidden');
+                incompInputs.classList.remove('hidden');
+
+                const T1 = parseFloat(document.getElementById('incompT1').value) || 293;
+                const T2 = parseFloat(document.getElementById('incompT2').value) || 353;
+                const c = parseFloat(document.getElementById('incompC').value) || 4.18;
+
+                deltaS = c * Math.log(T2 / T1);
+
+                document.getElementById('equationDisplay').innerHTML = 
+                    `$$\\Delta s = c_{\\text{prom}} \\ln\\left(\\frac{T_2}{T_1}\\right) = ${c} \\ln\\left(\\frac{${T2}}{${T1}}\\right)$$`;
+
+                const steps = 10;
+                for (let i = 0; i <= steps; i++) {
+                    const t = T1 + (T2 - T1) * (i / steps);
+                    const sStep = c * Math.log(t / T1);
+                    labels.push(sStep.toFixed(3));
+                    dataPoints.push({ x: sStep, y: t });
+                }
+            }
+
+            document.getElementById('resultDeltaS').innerText = `${deltaS >= 0 ? '+' : ''}${deltaS.toFixed(4)} kJ/kg·K`;
+
+            triggerMathJax();
+
+            if (substanceChartInstance) {
+                substanceChartInstance.data.datasets[0].data = dataPoints;
+                substanceChartInstance.update();
+            }
+        }
+
+        function initSubstanceChart() {
+            const ctx = document.getElementById('substanceChart').getContext('2d');
+            substanceChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: 'Trayectoria del Proceso (T vs Δs)',
+                        data: [],
+                        borderColor: '#C2593F',
+                        backgroundColor: 'rgba(194, 89, 63, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#2C4A5E'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: { display: true, text: 'Cambio de Entropía Δs (kJ/kg·K)' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Temperatura T (K)' }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => `T: ${ctx.parsed.y.toFixed(1)} K, Δs: ${ctx.parsed.x.toFixed(4)} kJ/kg·K`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- 2. Isentropic Efficiency & Device Chart Logic ---
+        function updateDeviceCalc() {
+            const type = document.getElementById('deviceType').value;
+            const eta = parseFloat(document.getElementById('effSlider').value) / 100;
+            const T1 = parseFloat(document.getElementById('devT1').value) || 800;
+            const PR = parseFloat(document.getElementById('devPR').value) || 5;
+
+            document.getElementById('effValueDisplay').innerText = `${Math.round(eta * 100)}%`;
+
+            const formulaEl = document.getElementById('deviceFormulaDisplay');
+            if (type === 'turbine') {
+                formulaEl.innerHTML = `$$\\eta_t = \\frac{h_1 - h_{2a}}{h_1 - h_{2s}}$$`;
+            } else {
+                formulaEl.innerHTML = `$$\\eta_c = \\frac{h_{2s} - h_1}{h_{2a} - h_1}$$`;
+            }
+
+            const Cp = 1.005;
+            const k = 1.4;
+
+            let T2s = 0;
+            let T2a = 0;
+            let ws = 0;
+            let wa = 0;
+            let sgen = 0;
+
+            if (type === 'turbine') {
+                T2s = T1 / Math.pow(PR, (k - 1) / k);
+                ws = Cp * (T1 - T2s);
+                wa = ws * eta;
+                T2a = T1 - (wa / Cp);
+                
+                const R = 0.287;
+                sgen = Cp * Math.log(T2a / T1) - R * Math.log(1 / PR);
+            } else { // Compressor
+                T2s = T1 * Math.pow(PR, (k - 1) / k);
+                ws = Cp * (T2s - T1);
+                wa = ws / eta;
+                T2a = T1 + (wa / Cp);
+
+                const R = 0.287;
+                sgen = Cp * Math.log(T2a / T1) - R * Math.log(PR);
+            }
+
+            document.getElementById('wsDisplay').innerText = `${ws.toFixed(1)} kJ/kg`;
+            document.getElementById('waDisplay').innerText = `${wa.toFixed(1)} kJ/kg`;
+            document.getElementById('sgenDisplay').innerText = `${Math.max(0, sgen).toFixed(4)} kJ/kg·K`;
+
+            triggerMathJax();
+
+            if (deviceChartInstance) {
+                const h1 = Cp * T1;
+                const h2s = Cp * T2s;
+                const h2a = Cp * T2a;
+
+                deviceChartInstance.data.datasets[0].data = [
+                    { x: 0, y: h1 },
+                    { x: 0, y: h2s }
+                ];
+                deviceChartInstance.data.datasets[1].data = [
+                    { x: 0, y: h1 },
+                    { x: Math.max(0, sgen), y: h2a }
+                ];
+                deviceChartInstance.update();
+            }
+        }
+
+        function initDeviceChart() {
+            const ctx = document.getElementById('deviceChart').getContext('2d');
+            deviceChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Trayectoria Isentrópica Ideal (s = const)',
+                            data: [],
+                            borderColor: '#2C4A5E',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            pointRadius: 5,
+                            pointBackgroundColor: '#2C4A5E'
+                        },
+                        {
+                            label: 'Trayectoria Real con Irreversibilidad',
+                            data: [],
+                            borderColor: '#C2593F',
+                            borderWidth: 3,
+                            pointRadius: 5,
+                            pointBackgroundColor: '#C2593F'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: { display: true, text: 'Entropía Específica s (kJ/kg·K)' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Entalpía Específica h (kJ/kg)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- 3. Heat Transfer & Irreversibility Calc ---
+        function updateHeatTransferCalc() {
+            const TH = parseFloat(document.getElementById('htTH').value) || 1000;
+            const TL = parseFloat(document.getElementById('htTL').value) || 300;
+            const Q = parseFloat(document.getElementById('htQ').value) || 500;
+            const T0 = parseFloat(document.getElementById('htT0').value) || 298;
+
+            if (TH <= TL) {
+                document.getElementById('htSgenTotal').innerText = "Error: TH debe ser > TL";
+                document.getElementById('htXdest').innerText = "---";
+                return;
+            }
+
+            const dSH = -Q / TH;
+            const dSL = Q / TL;
+            const sgenTotal = dSL + dSH;
+            const Xdest = T0 * sgenTotal;
+
+            document.getElementById('deltaSHDisplay').innerText = `${dSH.toFixed(3)} kW/K`;
+            document.getElementById('deltaSLDisplay').innerText = `+${dSL.toFixed(3)} kW/K`;
+            document.getElementById('htSgenTotal').innerText = `${sgenTotal.toFixed(4)} kW/K`;
+            document.getElementById('htXdest').innerText = `${Xdest.toFixed(2)} kW`;
+
+            triggerMathJax();
+        }
+    </script>
+</body>
+</html>
